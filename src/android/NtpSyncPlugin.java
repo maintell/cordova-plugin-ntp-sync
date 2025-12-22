@@ -1,4 +1,4 @@
-package com.example.ntpsync;
+package com.maintell.ntpsync;
 
 import android.content.Context;
 import android.content.Intent;

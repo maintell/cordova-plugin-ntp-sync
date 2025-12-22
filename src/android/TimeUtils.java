@@ -1,4 +1,4 @@
-package com.example.ntpsync;
+package com.maintell.ntpsync;
 
 import android.util.Log;
 import java.io.DataOutputStream;

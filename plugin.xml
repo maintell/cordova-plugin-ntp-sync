@@ -14,7 +14,7 @@
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="NtpSync">
-                <param name="android-package" value="com.example.ntpsync.NtpSyncPlugin"/>
+                <param name="android-package" value="com.maintell.ntpsync.NtpSyncPlugin"/>
             </feature>
         </config-file>
         
@@ -26,30 +26,18 @@
         </config-file>
         
         <config-file target="AndroidManifest.xml" parent="/manifest/application">
-            <service android:name="com.example.ntpsync.NtpSyncService"
-                     android:enabled="true"
-                     android:exported="false" />
-            <service android:name="com.example.ntpsync.HttpTimeSyncService"
-                     android:enabled="true"
-                     android:exported="false" />
-            <receiver android:name="com.example.ntpsync.BootReceiver"
-                      android:enabled="true"
-                      android:exported="true">
+            <service android:name="com.maintell.ntpsync.NtpSyncService" android:enabled="true" android:exported="false" />
+            <service android:name="com.maintell.ntpsync.HttpTimeSyncService" android:enabled="true" android:exported="false" />
+            <receiver android:name="com.maintell.ntpsync.BootReceiver" android:enabled="true" android:exported="true">
                 <intent-filter>
                     <action android:name="android.intent.action.BOOT_COMPLETED" />
                 </intent-filter>
             </receiver>
-        </config-file>
-        
-        <source-file src="src/android/NtpSyncPlugin.java" 
-                     target-dir="src/com/example/ntpsync" />
-        <source-file src="src/android/NtpSyncService.java" 
-                     target-dir="src/com/example/ntpsync" />
-        <source-file src="src/android/HttpTimeSyncService.java" 
-                     target-dir="src/com/example/ntpsync" />
-        <source-file src="src/android/TimeUtils.java" 
-                     target-dir="src/com/example/ntpsync" />
-        <source-file src="src/android/BootReceiver.java" 
-                     target-dir="src/com/example/ntpsync" />
+        </config-file>        
+        <source-file src="src/android/NtpSyncPlugin.java" target-dir="src/com/maintell/ntpsync" />
+        <source-file src="src/android/NtpSyncService.java" target-dir="src/com/maintell/ntpsync" />
+        <source-file src="src/android/HttpTimeSyncService.java" target-dir="src/com/maintell/ntpsync" />
+        <source-file src="src/android/TimeUtils.java" target-dir="src/com/maintell/ntpsync" />
+        <source-file src="src/android/BootReceiver.java" target-dir="src/com/maintell/ntpsync" />
     </platform>
 </plugin>
