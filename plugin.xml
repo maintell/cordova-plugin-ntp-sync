@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="cordova-plugin-ntp-sync"
+        version="2.0.0">
+    
+    <name>NTP Time Sync Enhanced</name>
+    <description>NTP+HTTP双重时间同步插件</description>
+    <license>MIT</license>
+    
+    <js-module src="www/NtpSync.js" name="NtpSync">
+        <clobbers target="NtpSync" />
+    </js-module>
+    
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="NtpSync">
+                <param name="android-package" value="com.example.ntpsync.NtpSyncPlugin"/>
+            </feature>
+        </config-file>
+        
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.SET_TIME" />
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+        </config-file>
+        
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <service android:name="com.example.ntpsync.NtpSyncService"
+                     android:enabled="true"
+                     android:exported="false" />
+            <service android:name="com.example.ntpsync.HttpTimeSyncService"
+                     android:enabled="true"
+                     android:exported="false" />
+            <receiver android:name="com.example.ntpsync.BootReceiver"
+                      android:enabled="true"
+                      android:exported="true">
+                <intent-filter>
+                    <action android:name="android.intent.action.BOOT_COMPLETED" />
+                </intent-filter>
+            </receiver>
+        </config-file>
+        
+        <source-file src="src/android/NtpSyncPlugin.java" 
+                     target-dir="src/com/example/ntpsync" />
+        <source-file src="src/android/NtpSyncService.java" 
+                     target-dir="src/com/example/ntpsync" />
+        <source-file src="src/android/HttpTimeSyncService.java" 
+                     target-dir="src/com/example/ntpsync" />
+        <source-file src="src/android/TimeUtils.java" 
+                     target-dir="src/com/example/ntpsync" />
+        <source-file src="src/android/BootReceiver.java" 
+                     target-dir="src/com/example/ntpsync" />
+    </platform>
+</plugin>
