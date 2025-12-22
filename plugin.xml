@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
         id="cordova-plugin-ntp-sync"
-        version="2.0.0">
+        version="1.0.0">
     
     <name>NTP Time Sync Enhanced</name>
     <description>NTP+HTTP双重时间同步插件</description>
     <license>MIT</license>
-    
+    <keywords>cordova,ntp,sync,time,plugin,android,java,javaScript</keywords>
+    <repo>https://github.com/maintell/cordova-plugin-ntp-sync</repo>
+    <issue>https://github.com/maintell/cordova-plugin-ntp-sync/issues</issue>   
+    <author>maintell</author>
+        
     <js-module src="www/NtpSync.js" name="NtpSync">
         <clobbers target="NtpSync" />
     </js-module>
