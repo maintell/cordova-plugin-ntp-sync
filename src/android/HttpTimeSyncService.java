@@ -22,7 +22,9 @@ import java.util.TimeZone;
 public class HttpTimeSyncService extends Service {
     
     private static final String TAG = "HttpTimeSyncService";
-    private static final long SYNC_INTERVAL = 30 * 60 * 1000; // 30分钟
+    // 初始快速重试间隔（首次成功前）和常规同步间隔（首次成功后）
+    private static final long INITIAL_RETRY_INTERVAL = 3 * 1000; // 3秒
+    private static final long REGULAR_INTERVAL = 5 * 60 * 1000; // 5分钟
     
     // HTTP时间源 - 按优先级排序
     private static final String[] HTTP_TIME_SOURCES = {
@@ -39,6 +41,8 @@ public class HttpTimeSyncService extends Service {
     private Runnable syncRunnable;
     private static long lastSyncTime = 0;
     private static int syncCount = 0;
+    private volatile boolean firstSyncDone = false;
+    private long currentInterval = INITIAL_RETRY_INTERVAL;
     
     @Override
     public void onCreate() {
@@ -99,10 +103,10 @@ public class HttpTimeSyncService extends Service {
             @Override
             public void run() {
                 performSync();
-                handler.postDelayed(this, SYNC_INTERVAL);
+                handler.postDelayed(this, currentInterval);
             }
         };
-        
+
         // 启动后立即执行一次
         handler.post(syncRunnable);
     }
@@ -119,6 +123,11 @@ public class HttpTimeSyncService extends Service {
                             lastSyncTime = System.currentTimeMillis();
                             syncCount++;
                             Log.d(TAG, "HTTP时间同步成功: " + new java.util.Date(httpTime));
+                            if (!firstSyncDone) {
+                                firstSyncDone = true;
+                                currentInterval = REGULAR_INTERVAL; // 切换到常规间隔
+                                Log.d(TAG, "首次同步完成，切换到常规同步间隔: " + currentInterval + "ms");
+                            }
                         } else {
                             Log.e(TAG, "HTTP时间设置失败");
                         }

@@ -17,7 +17,9 @@ import java.net.InetAddress;
 public class NtpSyncService extends Service {
     
     private static final String TAG = "NtpSyncService";
-    private static final long SYNC_INTERVAL = 30 * 60 * 1000; // 30分钟
+    // 初始快速重试间隔（首次成功前）和常规同步间隔（首次成功后）
+    private static final long INITIAL_RETRY_INTERVAL = 3 * 1000; // 3秒
+    private static final long REGULAR_INTERVAL = 5 * 60 * 1000; // 5分钟
     
     // NTP服务器组 - 按优先级排序
     private static final String[][] NTP_SERVERS = {
@@ -34,6 +36,8 @@ public class NtpSyncService extends Service {
     private Runnable syncRunnable;
     private static long lastSyncTime = 0;
     private static int syncCount = 0;
+    private volatile boolean firstSyncDone = false;
+    private long currentInterval = INITIAL_RETRY_INTERVAL;
     
     @Override
     public void onCreate() {
@@ -94,10 +98,11 @@ public class NtpSyncService extends Service {
             @Override
             public void run() {
                 performSync();
-                handler.postDelayed(this, SYNC_INTERVAL);
+                // 根据是否完成首次同步调整下次间隔
+                handler.postDelayed(this, currentInterval);
             }
         };
-        
+
         // 启动后立即执行一次
         handler.post(syncRunnable);
     }
@@ -114,6 +119,11 @@ public class NtpSyncService extends Service {
                             lastSyncTime = System.currentTimeMillis();
                             syncCount++;
                             Log.d(TAG, "NTP时间同步成功: " + new java.util.Date(ntpTime));
+                            if (!firstSyncDone) {
+                                firstSyncDone = true;
+                                currentInterval = REGULAR_INTERVAL; // 切换到常规间隔
+                                Log.d(TAG, "首次同步完成，切换到常规同步间隔: " + currentInterval + "ms");
+                            }
                         } else {
                             Log.e(TAG, "NTP时间设置失败");
                         }
