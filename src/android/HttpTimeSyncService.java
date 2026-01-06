@@ -182,13 +182,15 @@ public class HttpTimeSyncService extends Service {
                 return -1;
             }
             
-            // GMT时间转换为东八区时间（UTC+8）
+            // gmtDate 表示从服务器返回的 GMT 时刻（其内部为 UTC epoch 毫秒）
             long gmtMillis = gmtDate.getTime();
-            long cst8Millis = gmtMillis + (8 * 60 * 60 * 1000); // 加8小时
-            
-            Log.d(TAG, "GMT时间: " + gmtDate + ", 东八区时间: " + new Date(cst8Millis));
-            
-            return cst8Millis;
+
+            // 不要再人为加 8 小时 — gmtMillis 已经是 UTC epoch 毫秒，
+            // TimeUtils 期望的是 epoch 毫秒（或除以1000的秒数）。
+            Date localDate = new Date(gmtMillis);
+            Log.d(TAG, "解析到 GMT instant (UTC): " + gmtDate + ", 本地时间显示: " + localDate);
+
+            return gmtMillis;
             
         } catch (Exception e) {
             Log.w(TAG, "HTTP时间获取失败 " + urlString + ": " + e.getMessage());
