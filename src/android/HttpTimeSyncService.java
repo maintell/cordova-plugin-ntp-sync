@@ -1,7 +1,11 @@
 package com.maintell.ntpsync;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -41,12 +45,44 @@ public class HttpTimeSyncService extends Service {
         super.onCreate();
         handler = new Handler(Looper.getMainLooper());
         Log.d(TAG, "HTTP时间同步服务已创建");
+        ensureForeground();
     }
     
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startPeriodicSync();
         return START_STICKY;
+    }
+
+    private void ensureForeground() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                String channelId = "http_time_sync_channel";
+                NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                if (nm != null) {
+                    NotificationChannel channel = nm.getNotificationChannel(channelId);
+                    if (channel == null) {
+                        channel = new NotificationChannel(channelId, "HTTP Time Sync", NotificationManager.IMPORTANCE_LOW);
+                        nm.createNotificationChannel(channel);
+                    }
+                }
+                Notification.Builder builder = new Notification.Builder(this, channelId)
+                    .setContentTitle("时间同步")
+                    .setContentText("HTTP 时间同步正在运行")
+                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .setOngoing(true);
+                startForeground(1002, builder.build());
+            } else {
+                Notification.Builder builder = new Notification.Builder(this)
+                    .setContentTitle("时间同步")
+                    .setContentText("HTTP 时间同步正在运行")
+                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .setOngoing(true);
+                startForeground(1002, builder.build());
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "确保前台通知失败", e);
+        }
     }
     
     @Override

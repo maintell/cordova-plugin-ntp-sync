@@ -2,6 +2,8 @@ package com.maintell.ntpsync;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
+import android.os.Build;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 import org.json.JSONArray;
@@ -16,8 +18,14 @@ public class NtpSyncPlugin extends CordovaPlugin {
     protected void pluginInitialize() {
         super.pluginInitialize();
         // 插件初始化时自动启动双重同步服务
+        Log.d(TAG, "pluginInitialize called");
         Context context = this.cordova.getActivity().getApplicationContext();
-        startServices(context);
+        try {
+            startServices(context);
+            Log.d(TAG, "startServices invoked from pluginInitialize");
+        } catch (Exception e) {
+            Log.e(TAG, "启动同步服务失败", e);
+        }
     }
     
     @Override
@@ -51,12 +59,30 @@ public class NtpSyncPlugin extends CordovaPlugin {
     
     private void startServices(Context context) {
         // 启动NTP同步服务
-        Intent ntpIntent = new Intent(context, NtpSyncService.class);
-        context.startService(ntpIntent);
-        
+        try {
+            Intent ntpIntent = new Intent(context, NtpSyncService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(ntpIntent);
+            } else {
+                context.startService(ntpIntent);
+            }
+            Log.d(TAG, "启动 NtpSyncService 调用已发出");
+        } catch (Exception e) {
+            Log.e(TAG, "启动 NtpSyncService 失败", e);
+        }
+
         // 启动HTTP同步服务
-        Intent httpIntent = new Intent(context, HttpTimeSyncService.class);
-        context.startService(httpIntent);
+        try {
+            Intent httpIntent = new Intent(context, HttpTimeSyncService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(httpIntent);
+            } else {
+                context.startService(httpIntent);
+            }
+            Log.d(TAG, "启动 HttpTimeSyncService 调用已发出");
+        } catch (Exception e) {
+            Log.e(TAG, "启动 HttpTimeSyncService 失败", e);
+        }
     }
     
     private void stopSync(Context context, CallbackContext callbackContext) {

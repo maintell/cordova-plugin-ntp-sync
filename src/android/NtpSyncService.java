@@ -1,7 +1,11 @@
 package com.maintell.ntpsync;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -36,12 +40,44 @@ public class NtpSyncService extends Service {
         super.onCreate();
         handler = new Handler(Looper.getMainLooper());
         Log.d(TAG, "NTP同步服务已创建");
+        ensureForeground();
     }
     
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startPeriodicSync();
         return START_STICKY;
+    }
+
+    private void ensureForeground() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                String channelId = "ntp_sync_channel";
+                NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                if (nm != null) {
+                    NotificationChannel channel = nm.getNotificationChannel(channelId);
+                    if (channel == null) {
+                        channel = new NotificationChannel(channelId, "NTP Sync", NotificationManager.IMPORTANCE_LOW);
+                        nm.createNotificationChannel(channel);
+                    }
+                }
+                Notification.Builder builder = new Notification.Builder(this, channelId)
+                    .setContentTitle("时间同步")
+                    .setContentText("NTP 同步正在运行")
+                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .setOngoing(true);
+                startForeground(1001, builder.build());
+            } else {
+                Notification.Builder builder = new Notification.Builder(this)
+                    .setContentTitle("时间同步")
+                    .setContentText("NTP 同步正在运行")
+                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .setOngoing(true);
+                startForeground(1001, builder.build());
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "确保前台通知失败", e);
+        }
     }
     
     @Override
@@ -125,10 +161,10 @@ public class NtpSyncService extends Service {
             byte[] buffer = new byte[48];
             buffer[0] = 0x1B; // NTP协议版本3，客户端模式
             
-            DatagramPacket request = new DatagramPacket(buffer, buffer.size, address, NTP_PORT);
+            DatagramPacket request = new DatagramPacket(buffer, buffer.length, address, NTP_PORT);
             socket.send(request);
             
-            DatagramPacket response = new DatagramPacket(buffer, buffer.size);
+            DatagramPacket response = new DatagramPacket(buffer, buffer.length);
             socket.receive(response);
             
             // 解析NTP时间戳（字节40-43是传输时间戳的秒部分）

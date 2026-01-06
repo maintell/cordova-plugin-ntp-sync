@@ -17,9 +17,10 @@
     </js-module>
     
     <platform name="android">
-        <config-file target="res/xml/config.xml" parent="/*">
+        <config-file target="config.xml" parent="/*">
             <feature name="NtpSync">
                 <param name="android-package" value="com.maintell.ntpsync.NtpSyncPlugin"/>
+                <param name="onload" value="true" />
             </feature>
         </config-file>
         
